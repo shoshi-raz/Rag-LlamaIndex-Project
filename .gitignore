@@ -1,0 +1,35 @@
+# === API Keys & Secrets (CRITICAL) ===
+.env
+*.env
+**/.env
+secret.json
+keys.txt
+
+# === Python Virtual Environments ===
+venv/
+.venv/
+env/
+# אם יצרת סביבה וירטואלית בתוך תיקיית ה-rag-agent
+rag-agent/venv/
+rag-agent/.venv/
+
+# === Python Cache & Artifacts ===
+**/__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.pytest_cache/
+
+# === Project Source Exclusions ===
+**/node_modules/
+**/dist/
+**/build/
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Databases & Local Output ===
+*.sqlite
+*.db

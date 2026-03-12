@@ -1,0 +1,107 @@
+# 🤖 DevTaskManager Agent: Unified RAG for Agentic Coding Tools
+
+## 📖 Overview
+
+In the modern development workflow, tools like Cursor, Claude Code, and Kiro maintain constant documentation of decisions, tasks, and system specs within hidden .md files.
+
+**DevTaskManager Agent** is an advanced RAG (Retrieval-Augmented Generation) system designed to bridge the gap between these silos. It aggregates documentation from multiple agentic tools into a single "Source of Truth," allowing developers to query technical decisions, UI rules, and system warnings across the entire project lifecycle.
+
+---
+
+## 🚀 Key Features
+
+- **Multi-Source Ingestion**: Seamlessly loads and parses Markdown documentation from multiple coding assistants (Cursor, Claude, Kiro).
+
+- **Hybrid Search Engine**:
+  - **Semantic Search**: Powered by Cohere & Pinecone for general technical "how-to" and context.
+  
+- **Structured Extraction**: A dedicated pipeline that extracts "Mental Models" (Decisions, Rules, Warnings) into a queryable JSON schema.
+
+- **Event-Driven Workflow**: Built using LlamaIndex Workflows, utilizing an asynchronous, event-based architecture for query routing and validation.
+
+- **Smart Routing**: Automatically determines whether to use vector retrieval or structured data filtering based on the user's intent.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Framework** | LlamaIndex (Workflows, Structured Extraction, Vector Store Index) |
+| **Embeddings** | Cohere (embed-multilingual-v3.0) |
+| **LLM** | Cohere (command-r-plus-08-2024) |
+| **Vector DB** | Pinecone |
+| **UI** | Gradio |
+
+---
+
+## 🏗️ Architecture & Workflow
+
+The system operates through a series of decoupled steps:
+
+1. **Ingestion & Chunking**: Scans tool-specific directories and splits content into Markdown-aware nodes.
+
+2. **Knowledge Extraction (Phase 3)**: Analyzes nodes to identify technical decisions and rules, saving them to a structured `project_knowledge_base_v2.json`.
+
+3. **The Agentic Loop**:
+   - **Router**: Classifies query as STRUCTURED (lists, rules) or SEARCH (explanations).
+   - **Validator**: Checks retrieval confidence and re-ranks nodes using LongContextReorder.
+   - **Synthesizer**: Merges context from the relevant source to generate a final, source-attributed answer.
+
+---
+
+## 💻 How to Run
+
+### 1. Setup Environment
+
+Create a `.env` file in the root directory:
+
+```env
+COHERE_API_KEY=your_api_key_here
+PINECONE_API_KEY=your_api_key_here
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install llama-index llama-index-embeddings-cohere llama-index-vector-stores-pinecone pinecone-client gradio pandas
+```
+
+### 3. Execution Flow (Jupyter Notebook)
+
+To ensure the system initializes correctly, run the notebook cells in order:
+
+1. **Configuration**: Load API keys and setup SSL fixes (if required).
+2. **Data Preparation**: Load and chunk .md files from your tool directories.
+3. **Indexing**: Sync nodes with Pinecone (skipped if the index is already populated).
+4. **Extraction**: Run the Structured Data Extractor to build the JSON knowledge base (Cached for efficiency).
+5. **Interface**: Launch the Gradio UI at the final cell.
+
+---
+
+## 🙋 Example Queries
+
+| Query Type | Example Question |
+|-----------|------------------|
+| **Semantic** | "How is the authentication process implemented?" |
+| **Structured** | "Give me a list of all technical decisions regarding the DB." |
+| **Temporal** | "What is the latest instruction regarding RTL support?" |
+| **Warnings** | "Which components are marked as sensitive or 'do not touch'?" |
+
+---
+
+## 📊 Optimization & Resource Management
+
+- **Cost Efficiency**: The system checks `total_vector_count` in Pinecone and verifies existing local JSON files before triggering expensive LLM/Embedding calls.
+
+- **Static Data Assumption**: Following Phase 1 requirements, the current version treats input as static.
+
+- **Future Roadmap**: Implementation of file hashing for incremental synchronization between the .md files and the vector store.
+
+---
+
+## 📝 Reflection & Discussion
+
+- **Routing Accuracy**: The Router successfully distinguishes between "Lists" and "Explanations" in ~90% of cases, though complex multi-intent questions may require further prompt tuning.
+
+- **Extraction Greedy Strategy**: The extractor is tuned to be "greedy," capturing patterns even when not explicitly labeled as "rules" in the documentation.
